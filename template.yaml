@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.8
+  Hubitat home automation integrations.
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  DoorNotificationHandler:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      Events:
+        EmailNotificationSource:
+          Type: SNS
+          Properties:
+            # FilterPolicy: SnsFilterPolicy
+            Region: us-east-1
+            SqsSubscription: false
+            Topic: arn:aws:sns:us-east-1:297473205123:adt-email-notifications
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./doors
+      DockerTag: python3.8-v1
+
+Outputs:
+  DoorNotificationHandler:
+    Description: "DoorNotificationHandler Function ARN"
+    Value: !GetAtt DoorNotificationHandler.Arn
+  DoorNotificationHandlerIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt DoorNotificationHandlerRole.Arn
