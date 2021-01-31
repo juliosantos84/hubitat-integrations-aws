@@ -37,6 +37,4 @@ def test_lambda_handler(apigw_event):
         resp_mock.status_code = 200
         req_mock.get.return_value = resp_mock
         ret = notifications.lambda_handler(apigw_event, "")
-        data = json.loads(ret["body"])
-
-        assert ret["statusCode"] == 200
+        req_mock.get.assert_called_with("https://cloud.hubitat.com/api/UUID_NOT_CONFIGURED/apps/9/devices/139/on?access_token=ACCESS_TOKEN_NOT_CONFIGURED")
