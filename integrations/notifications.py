@@ -31,31 +31,15 @@ DEVICE_CACHE = [{"id":"1","name":"Inovelli Z-Wave Smart Scene Switch S2","label"
 
 def lambda_handler(event, context):
     """
-    Handles an SES email receipient action
-    
-    Expects an email from ADT, for example:
-    
-    Subject:
-    JULIO SANTOS's System: Panel was Disarmed by Remote User at 5:46 pm
-    
-    Body:
-    JULIO SANTOS's System: The Panel was Disarmed by Remote User at 5:46 pm on Sunday, January 24 2021.
-    
-    This is a monitoring message from ADT Security. Log in at https://www.adt.com/control-login to manage your system and view other recent activity.
-    
-    
-    
-    Smart Security Technology backed by 24/7 Monitoring. ADT. Real Protection.
-    
-    Ref: M39867042062 - 10362591
+    Expects an SNS event with Records representing SES Email notifications.
+
+    Emails have the format:
+    Subject: JULIO SANTOS's System: Panel was Disarmed by Remote User at 5:46 pm
+    Body: JULIO SANTOS's System: The Panel was Disarmed by Remote User at 5:46 pm on Sunday, January 24 2021. [...]
     """
-    # print (f"Devices Url: {HUBITAT_DEVICES_URL}")
     for record in event['Records']:
         handleRecord(record)
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Processed records')
-    }
+    return
 
 def handleRecord(record):
     eventSource = record['EventSource']
