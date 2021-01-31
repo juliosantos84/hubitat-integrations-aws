@@ -50,7 +50,7 @@ Resources:
       DockerContext: ./device_cacher
       DockerTag: python3.8-v1
 
-  DeviceCacherBucketPolicy:
+  DeviceCacheBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
       Bucket: com.everythingbiig.hubitat
@@ -68,6 +68,7 @@ Resources:
             Principal:
               AWS:
                 - !GetAtt DeviceCacherFunctionRole.Arn
+                - !GetAtt DoorNotificationHandlerRole.Arn
 
 Outputs:
   DoorNotificationHandler:

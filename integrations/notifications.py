@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+import boto3
 
 ALLOWED_SOURCES = [
     "notifications@adtcontrol.com",
@@ -28,6 +29,7 @@ HUBITAT_SWITCH_OFF_URL = f"{HUBITAT_BASE_URL}/devices/%s/off?access_token={HUBIT
 
 # TODO
 DEVICE_CACHE = [{"id":"1","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Gym Lights"},{"id":"2","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Living Room Light"},{"id":"131","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Basement Entry Light"},{"id":"3","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Julio's Office Light"},{"id":"67","name":"Julio\u2019s iPhone","label":"Julio\u2019s iPhone"},{"id":"4","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Backyard Light"},{"id":"5","name":"hueBridge","label":"Hue Bridge (2F208D)"},{"id":"6","name":"hueBridgeBulb","label":"hallway light"},{"id":"102","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Master Bedroom Ceiling Fan"},{"id":"135","name":"Generic Z-Wave Smart Switch","label":"Backyard Outlet"},{"id":"7","name":"hueBridgeBulb","label":"hallway light"},{"id":"8","name":"hueBridgeBulb","label":"Julio's lamp"},{"id":"136","name":"Generic Z-Wave Smart Dimmer","label":"Movie Room Lights"},{"id":"137","name":"Generic Z-Wave Smart Dimmer","label":"Dining Room Lights"},{"id":"9","name":"hueBridgeBulb","label":"Living room floor lamp"},{"id":"138","name":"GE Smart Fan Control","label":"Dining Room Fan"},{"id":"10","name":"hueBridgeBulb","label":"Living Room Floor Lamp"},{"id":"139","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Basement Front Door Light"},{"id":"11","name":"hueBridgeBulb","label":"Marissa's lamp"},{"id":"142","name":"GE Enbrighten Z-Wave Smart Switch","label":"Laundry Room Light"},{"id":"143","name":"GE Enbrighten Z-Wave Smart Switch","label":"Guest Bathroom Light"},{"id":"144","name":"GE Enbrighten Z-Wave Smart Switch","label":"Guest Bathroom Fan"}]
+DEVICE_CACHE_BUCKET = os.getenv('DEVICE_CACHE_BUCKET','com.everythingbiig.hubitat')
 
 def lambda_handler(event, context):
     """
@@ -37,6 +39,17 @@ def lambda_handler(event, context):
     Subject: JULIO SANTOS's System: Panel was Disarmed by Remote User at 5:46 pm
     Body: JULIO SANTOS's System: The Panel was Disarmed by Remote User at 5:46 pm on Sunday, January 24 2021. [...]
     """
+    s3 = boto3.client('s3')
+    response = s3.get_object(
+        Bucket=DEVICE_CACHE_BUCKET,
+        Key='devices/nameToIdMap.json',
+    )
+    if response and response['Body']:
+        print ("Loaded devices from s3 cache.")
+        DEVICE_CACHE = json.loads(response['Body'].decode("utf-8"))
+        print (f"Device Cache: {DEVICE_CACHE}")
+
+    print (response)
     for record in event['Records']:
         handleRecord(record)
     return
