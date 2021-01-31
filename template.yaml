@@ -11,7 +11,7 @@ Globals:
 
 Resources:
   DoorNotificationHandler:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
       Events:
@@ -27,10 +27,58 @@ Resources:
       DockerContext: ./integrations
       DockerTag: python3.8-v1
 
+  DeviceCacherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Events:
+        RefreshSchedule:
+          Type: Schedule
+          Properties:
+            DeadLetterConfig:
+              Type: SQS
+              QueueLogicalId: DeviceCacherFailures
+            Description: DeviceCacher refresh schedule.
+            Enabled: true
+            Name: device-cacher-schedule
+            RetryPolicy:
+              MaximumEventAgeInSeconds: 60
+              MaximumRetryAttempts: 3
+            Schedule: rate(1 minute)
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./device_cacher
+      DockerTag: python3.8-v1
+
+  DeviceCacherBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: com.everythingbiig.hubitat
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:PutObject'
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - com.everythingbiig.hubitat
+                - /*
+            Principal:
+              AWS:
+                - !GetAtt DeviceCacherFunctionRole.Arn
+
 Outputs:
   DoorNotificationHandler:
     Description: "DoorNotificationHandler Function ARN"
     Value: !GetAtt DoorNotificationHandler.Arn
+  DeviceCacherFunction:
+    Description: "DeviceCacherFunction Function ARN"
+    Value: !GetAtt DeviceCacherFunction.Arn
   DoorNotificationHandlerIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
+    Description: "Implicit IAM Role created for RefreshDeviceCacheEventHandler function"
     Value: !GetAtt DoorNotificationHandlerRole.Arn
+  DeviceCacherFunctionIamRole:
+    Description: "Implicit IAM Role created for DeviceCacherFunction function"
+    Value: !GetAtt DeviceCacherFunctionRole.Arn
