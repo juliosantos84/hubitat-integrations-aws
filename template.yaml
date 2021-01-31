@@ -24,7 +24,7 @@ Resources:
             Topic: arn:aws:sns:us-east-1:297473205123:adt-email-notifications
     Metadata:
       Dockerfile: Dockerfile
-      DockerContext: ./doors
+      DockerContext: ./integrations
       DockerTag: python3.8-v1
 
 Outputs:

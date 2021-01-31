@@ -54,7 +54,7 @@ def lambda_handler(event, context):
         handleRecord(record)
     return {
         'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
+        'body': json.dumps('Processed records')
     }
 
 def handleRecord(record):
@@ -76,18 +76,21 @@ def handleRecord(record):
             lights = DOOR_TO_LIGHT_MAP.get(door)
             for light in lights:
                 print (f"Evaluating light {light}")
-                lightId = getDeviceId(light)
-                if lightId is not None:
-                    deviceUrl = HUBITAT_SWITCH_ON_URL % (lightId)
-                    print (f"DeviceUrl: {deviceUrl}")
-                    r = requests.get(deviceUrl)
-                    if r.status_code > 200:
-                        print ("Something bad happened.")
-                    else:
-                        print ("Command sent")
-                    return
-                else:
-                    raise ValueError("The configured light could not be found, check DEVICE_CACHE")
+                turnOnLight(light)
+
+def turnOnLight(lightName):
+    lightId = getDeviceId(lightName)
+    if lightId is not None:
+        deviceUrl = HUBITAT_SWITCH_ON_URL % (lightId)
+        print (f"DeviceUrl: {deviceUrl}")
+        r = requests.get(deviceUrl)
+        if r.status_code > 200:
+            print ("Something bad happened.")
+        else:
+            print ("Command sent")
+        return
+    else:
+        raise ValueError("The configured light could not be found, check DEVICE_CACHE")
 
 def getDeviceId(deviceName):
     print (f"Getting {deviceName} id")
