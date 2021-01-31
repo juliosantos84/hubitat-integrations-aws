@@ -3,6 +3,7 @@ import os
 import requests
 import boto3
 
+# TODO Parameterize these
 ALLOWED_SOURCES = [
     "notifications@adtcontrol.com",
     "julio.r.santos.jr@gmail.com"
@@ -12,8 +13,9 @@ DESTINATION_ADDRESSES = [
     "doors@automation.everythingbiig.com"
 ]
 
-DOOR_TO_LIGHT_MAP = {
-    "Basement Front Door": ["Basement Front Door Light"],
+# Externalize this config
+DOOR_TO_DEVICE_MAP = {
+    "Basement Front Door": ["Basement Front Door Light", "Basement Entry Light"],
     "Basement Back Door": ["Backyard Light", "Backyard Outlet"]
 }
 
@@ -27,8 +29,7 @@ HUBITAT_SWITCH_ON_URL = f"{HUBITAT_BASE_URL}/devices/%s/on?access_token={HUBITAT
 
 HUBITAT_SWITCH_OFF_URL = f"{HUBITAT_BASE_URL}/devices/%s/off?access_token={HUBITAT_ACCESS_TOKEN}"
 
-# TODO
-DEVICE_CACHE = [{"id":"1","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Gym Lights"},{"id":"2","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Living Room Light"},{"id":"131","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Basement Entry Light"},{"id":"3","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Julio's Office Light"},{"id":"67","name":"Julio\u2019s iPhone","label":"Julio\u2019s iPhone"},{"id":"4","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Backyard Light"},{"id":"5","name":"hueBridge","label":"Hue Bridge (2F208D)"},{"id":"6","name":"hueBridgeBulb","label":"hallway light"},{"id":"102","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Master Bedroom Ceiling Fan"},{"id":"135","name":"Generic Z-Wave Smart Switch","label":"Backyard Outlet"},{"id":"7","name":"hueBridgeBulb","label":"hallway light"},{"id":"8","name":"hueBridgeBulb","label":"Julio's lamp"},{"id":"136","name":"Generic Z-Wave Smart Dimmer","label":"Movie Room Lights"},{"id":"137","name":"Generic Z-Wave Smart Dimmer","label":"Dining Room Lights"},{"id":"9","name":"hueBridgeBulb","label":"Living room floor lamp"},{"id":"138","name":"GE Smart Fan Control","label":"Dining Room Fan"},{"id":"10","name":"hueBridgeBulb","label":"Living Room Floor Lamp"},{"id":"139","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Basement Front Door Light"},{"id":"11","name":"hueBridgeBulb","label":"Marissa's lamp"},{"id":"142","name":"GE Enbrighten Z-Wave Smart Switch","label":"Laundry Room Light"},{"id":"143","name":"GE Enbrighten Z-Wave Smart Switch","label":"Guest Bathroom Light"},{"id":"144","name":"GE Enbrighten Z-Wave Smart Switch","label":"Guest Bathroom Fan"}]
+DEVICE_CACHE = {}
 DEVICE_CACHE_BUCKET = os.getenv('DEVICE_CACHE_BUCKET','com.everythingbiig.hubitat')
 
 def lambda_handler(event, context):
@@ -36,8 +37,8 @@ def lambda_handler(event, context):
     Expects an SNS event with Records representing SES Email notifications.
 
     Emails have the format:
-    Subject: JULIO SANTOS's System: Panel was Disarmed by Remote User at 5:46 pm
-    Body: JULIO SANTOS's System: The Panel was Disarmed by Remote User at 5:46 pm on Sunday, January 24 2021. [...]
+    Subject: # JULIO SANTOS's System: The Basement Front Door was Opened at 8:04 pm
+    Subject: # JULIO SANTOS's System: The [DEVICE NAME] was [ACTION] at [TIME]
     """
     s3 = boto3.client('s3')
     response = s3.get_object(
@@ -46,7 +47,8 @@ def lambda_handler(event, context):
     )
     if response and response['Body']:
         print ("Loaded devices from s3 cache.")
-        DEVICE_CACHE = json.loads(response['Body'].decode("utf-8"))
+        global DEVICE_CACHE
+        DEVICE_CACHE = json.loads(response['Body'].read().decode("utf-8"))
         print (f"Device Cache: {DEVICE_CACHE}")
 
     print (response)
@@ -60,25 +62,23 @@ def handleRecord(record):
     messageJson = json.loads(messageString)
     # should be notifications@adtcontrol.com
     mailSource = messageJson['mail']['source']
-    # should be something like
-    # JULIO SANTOS's System: The Basement Front Door was Opened at 8:04 pm
-    # JULIO SANTOS's System: The [DEVICE NAME] was [ACTION] at [TIME]
+    # should be something like JULIO SANTOS's System: The Basement Front Door was Opened at 8:04 pm
     mailSubject = getSubject(messageJson['mail']['headers'])
     print (f"Source: {mailSource}\nSubject: {mailSubject}")
 
-    for door in DOOR_TO_LIGHT_MAP.keys():
+    for door in DOOR_TO_DEVICE_MAP.keys():
         print (f"Evaluating {door}")
         if door in mailSubject:
             print ("Door is in mail subject")
-            lights = DOOR_TO_LIGHT_MAP.get(door)
+            lights = DOOR_TO_DEVICE_MAP.get(door)
             for light in lights:
                 print (f"Evaluating light {light}")
-                turnOnLight(light)
+                turnOnDevice(light)
 
-def turnOnLight(lightName):
-    lightId = getDeviceId(lightName)
-    if lightId is not None:
-        deviceUrl = HUBITAT_SWITCH_ON_URL % (lightId)
+def turnOnDevice(lightName):
+    deviceId = getDeviceId(lightName)
+    if deviceId is not None:
+        deviceUrl = HUBITAT_SWITCH_ON_URL % (deviceId)
         print (f"DeviceUrl: {deviceUrl}")
         r = requests.get(deviceUrl)
         if r.status_code > 200:
@@ -90,13 +90,7 @@ def turnOnLight(lightName):
         raise ValueError("The configured light could not be found, check DEVICE_CACHE")
 
 def getDeviceId(deviceName):
-    print (f"Getting {deviceName} id")
-    for device in DEVICE_CACHE:
-        print (f"Evaluating {device}")
-        if device['label'] == deviceName:
-            id = device['id']
-            print (f"Returning {id}")
-            return id
+    return DEVICE_CACHE[deviceName]
 
 def getSubject(headerList):
     for header in headerList:
