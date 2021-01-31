@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     if r.status_code > 200:
         raise Exception("Unable to retrieve device list")
 
-    nameToIdMap = mapNamesToIds(r.json)
+    nameToIdMap = mapNamesToIds(r.json())
 
     s3 = boto3.client('s3')
     s3.put_object(

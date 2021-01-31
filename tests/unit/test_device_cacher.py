@@ -14,7 +14,7 @@ def test_lambda_handler(schedule_event):
     with patch('device_cacher.s3_cacher.requests') as req_mock:
         resp_mock = MagicMock()
         resp_mock.status_code = 200
-        resp_mock.json = [{"id":"1","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Gym Lights"}]
+        resp_mock.json.return_value = [{"id":"1","name":"Inovelli Z-Wave Smart Scene Switch S2","label":"Gym Lights"}]
         req_mock.get.return_value = resp_mock
         with patch('device_cacher.s3_cacher.boto3.client') as boto_mock:
             s3_mock = MagicMock()
