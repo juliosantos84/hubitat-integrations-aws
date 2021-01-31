@@ -5,8 +5,8 @@ from unittest.mock import patch, MagicMock
 from integrations import notifications
 
 @pytest.fixture()
-def apigw_event():
-    """ Generates API GW Event"""
+def sns_event():
+    """ Generates SNS Event"""
 
     return {
         "Records": [
@@ -31,10 +31,10 @@ def apigw_event():
         ]
     }
 
-def test_lambda_handler(apigw_event):
+def test_lambda_handler(sns_event):
     with patch('integrations.notifications.requests') as req_mock:
         resp_mock = MagicMock()
         resp_mock.status_code = 200
         req_mock.get.return_value = resp_mock
-        ret = notifications.lambda_handler(apigw_event, "")
+        ret = notifications.lambda_handler(sns_event, "")
         req_mock.get.assert_called_with("https://cloud.hubitat.com/api/UUID_NOT_CONFIGURED/apps/9/devices/139/on?access_token=ACCESS_TOKEN_NOT_CONFIGURED")
