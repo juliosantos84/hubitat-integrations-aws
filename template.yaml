@@ -43,8 +43,8 @@ Resources:
             Name: device-cacher-schedule
             RetryPolicy:
               MaximumEventAgeInSeconds: 60
-              MaximumRetryAttempts: 3
-            Schedule: rate(1 minute)
+              MaximumRetryAttempts: 0
+            Schedule: rate(5 minutes)
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./device_cacher
