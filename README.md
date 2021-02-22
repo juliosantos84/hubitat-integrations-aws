@@ -11,9 +11,10 @@ The application uses several AWS resources, including Lambda functions and an AP
 
 ## Requirements
 - ECR Registry
-- 
+- Hubitat Elevation
+- Raspberry Pi 4
 
-## Deploy the sample application
+## Deploy the application
 
 The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
 
@@ -42,15 +43,31 @@ The first command will build a docker image from a Dockerfile and then copy the 
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
+### DoorNotificationHandler
+
+Handles SNS notifications from SES for emails for notifying of door open/close events.
+
+### DoorbellnHandler
+
+Handles SNS notifications from SES for emails notifying of doorbell rings.
+
+## Configure environment variables
+For now, the environment variables need to be manually configured after deployment.
+
+|NAME|VALUE|FUNCTION|
+|----|-----|--------|
+|HUBITAT_ACCESS_TOKEN|access token|DoorbellHandler, DoorNotificationHandler|
+|HUBITAT_UUID|uuid|DoorbellHandler, DoorNotificationHandler|
+
 ## Use the SAM CLI to build and test locally
 
 Build your application with the `sam build` command.
 
 ```bash
-door-notification-handler$ sam build
+hubitat-integrations-aws$ sam build
 ```
 
-The SAM CLI builds a docker image from a Dockerfile and then installs dependencies defined in `hello_world/requirements.txt` inside the docker image. The processed template file is saved in the `.aws-sam/build` folder.
+The SAM CLI builds a docker image from a Dockerfile and then installs dependencies defined in `*/requirements.txt` inside the docker image. The processed template file is saved in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
@@ -63,8 +80,8 @@ door-notification-handler$ sam local invoke HelloWorldFunction --event events/ev
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
 
 ```bash
-door-notification-handler$ sam local start-api
-door-notification-handler$ curl http://localhost:3000/
+hubitat-integrations-aws$ sam local start-api
+hubitat-integrations-aws$ curl http://localhost:3000/
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.

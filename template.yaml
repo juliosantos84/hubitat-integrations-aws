@@ -50,7 +50,7 @@ Resources:
       DockerContext: ./device_cacher
       DockerTag: python3.8-v1
 
-  DeviceCacherBucketPolicy:
+  DeviceCacheBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
       Bucket: com.everythingbiig.hubitat
@@ -68,6 +68,24 @@ Resources:
             Principal:
               AWS:
                 - !GetAtt DeviceCacherFunctionRole.Arn
+                - !GetAtt DoorNotificationHandlerRole.Arn
+
+  DoorbellHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Events:
+        EmailNotificationSource:
+          Type: SNS
+          Properties:
+            # FilterPolicy: SnsFilterPolicy
+            Region: us-east-1
+            SqsSubscription: false
+            Topic: arn:aws:sns:us-east-1:297473205123:adt-email-notifications
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./doorbell_integrations
+      DockerTag: python3.8-v1
 
 Outputs:
   DoorNotificationHandler:
@@ -76,9 +94,15 @@ Outputs:
   DeviceCacherFunction:
     Description: "DeviceCacherFunction Function ARN"
     Value: !GetAtt DeviceCacherFunction.Arn
+  DoorNotificationHandler:
+    Description: "DoorbellHandler Function ARN"
+    Value: !GetAtt DoorbellHandler.Arn
   DoorNotificationHandlerIamRole:
     Description: "Implicit IAM Role created for RefreshDeviceCacheEventHandler function"
     Value: !GetAtt DoorNotificationHandlerRole.Arn
   DeviceCacherFunctionIamRole:
     Description: "Implicit IAM Role created for DeviceCacherFunction function"
     Value: !GetAtt DeviceCacherFunctionRole.Arn
+  DeviceCacherFunctionIamRole:
+    Description: "Implicit IAM Role created for DoorbellHandler function"
+    Value: !GetAtt DoorbellHandlerRole.Arn
