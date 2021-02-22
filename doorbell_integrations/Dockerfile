@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.8
 
-COPY notifications.py requirements.txt ./
+COPY doorbell.py requirements.txt ./
 
 RUN python3.8 -m pip install -r requirements.txt -t .
 

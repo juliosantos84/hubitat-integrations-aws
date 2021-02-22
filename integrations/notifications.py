@@ -24,7 +24,6 @@ HUBITAT_UUID = os.getenv("HUBITAT_UUID", "UUID_NOT_CONFIGURED")
 HUBITAT_BASE_URL = f"https://cloud.hubitat.com/api/{HUBITAT_UUID}/apps/9"
 HUBITAT_DEVICES_URL = f"{HUBITAT_BASE_URL}/devices?access_token={HUBITAT_ACCESS_TOKEN}"
 
-# https://cloud.hubitat.com/api/10bd8767-6e19-4812-86a8-440a2cdbf442/apps/9/devices/1/on?access_token=7b7fb058-a08e-4d23-b9c4-ae990524519e
 HUBITAT_SWITCH_ON_URL = f"{HUBITAT_BASE_URL}/devices/%s/on?access_token={HUBITAT_ACCESS_TOKEN}"
 
 HUBITAT_SWITCH_OFF_URL = f"{HUBITAT_BASE_URL}/devices/%s/off?access_token={HUBITAT_ACCESS_TOKEN}"

@@ -7,5 +7,5 @@ s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1l6edjokz8n4n"
 s3_prefix = "hubitat-integrations-aws"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
-image_repositories = ["DoorNotificationHandler=297473205123.dkr.ecr.us-east-1.amazonaws.com/hubitat-integrations-aws", "DeviceCacherFunction=297473205123.dkr.ecr.us-east-1.amazonaws.com/hubitat-integrations-aws"]
+image_repositories = ["DoorNotificationHandler=297473205123.dkr.ecr.us-east-1.amazonaws.com/hubitat-integrations-aws", "DeviceCacherFunction=297473205123.dkr.ecr.us-east-1.amazonaws.com/hubitat-integrations-aws", "DoorbellHandler=297473205123.dkr.ecr.us-east-1.amazonaws.com/hubitat-integrations-aws"]
 confirm_changeset = true

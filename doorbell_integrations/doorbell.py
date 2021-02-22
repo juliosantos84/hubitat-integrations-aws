@@ -13,12 +13,6 @@ DESTINATION_ADDRESSES = [
     "doorbell@automation.everythingbiig.com"
 ]
 
-# Externalize this config
-DOOR_TO_DEVICE_MAP = {
-    "Basement Front Door": ["Basement Front Door Light", "Basement Entry Light"],
-    "Basement Back Door": ["Backyard Light", "Backyard Outlet"]
-}
-
 HUBITAT_ACCESS_TOKEN = os.getenv("HUBITAT_ACCESS_TOKEN", "ACCESS_TOKEN_NOT_CONFIGURED")
 HUBITAT_UUID = os.getenv("HUBITAT_UUID", "UUID_NOT_CONFIGURED")
 HUBITAT_BASE_URL = f"https://cloud.hubitat.com/api/{HUBITAT_UUID}/apps/159"
